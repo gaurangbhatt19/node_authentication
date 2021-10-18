@@ -10,11 +10,13 @@ let users=[{name:"Gaurang"}]
     res.json(users);
 })
 
-app.post("/users",async(req,res)=>{
-    try{
-
-        const salt =bcrypt.genSalt(20);
-        const hashPassword=await bcrypt.hash(req.body.password,salt); 
+app.post("/users",async (req,res)=>{
+    
+   try{
+        const salt = await bcrypt.genSalt(10)
+        console.log(salt)
+        let password=req.body.password
+        const hashPassword=await bcrypt.hash(password,salt); 
         const user={
             name:req.body.name,
             password: hashPassword
@@ -23,10 +25,25 @@ app.post("/users",async(req,res)=>{
         
         users.push(user);
         res.status(201).send(users)
-    }catch(e){
-        res.status(500).send()
     }
-   
+    catch(err){
+res.status(500).send(err)
+    }
+    
+})
+
+app.post("/users/login",async(req,res)=>{
+    const userHash= users.find(user=> user.name==req.body.name)
+    if(userHash==null){
+    res.status(400).send()
+    }else{
+      
+     if(await bcrypt.compare(req.body.password,userHash.password)){
+         res.send("Success")
+     }else{
+         res.send("Fail")
+     }
+    }
 })
 
 
